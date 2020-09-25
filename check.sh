@@ -6,13 +6,15 @@ OOS_STRING="PRODUCT_INVENTORY_OUT_OF_STOCK"
 ALERT_URL="https://your-home-assistant:8123/api/webhook/some_hook_id"
 SKU=$(cat .sku)
 
+USER_AGENT="Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/85.0.4183.102 Safari/537.36"
+
 echo "MONITORING FOR SKU $SKU"
 
 checkUrl() {
     TS=$(date +%s)
     FILE=data/$TS
 
-    curl -s "$1" > $FILE
+    curl -s -A $USER_AGENT "$1" > $FILE
 
     if cat $FILE | grep -q "$2"; then
         return 0 # $2 exists in $1
@@ -30,7 +32,7 @@ while : ; do
 
         # Check for a new SKU every 5 minutes
         if [ $LAST_MINUTE == -1 ] || (( $MINUTE % 5 )); then
-            NEW_SKU=$(curl -s $PRODUCT_URL | python parseForSku.py)
+            NEW_SKU=$(curl -s -A $USER_AGENT $PRODUCT_URL | python parseForSku.py)
             if (( $NEW_SKU != $SKU )); then
                 echo -e "\n$TIME NEW SKU FOUND $NEW_SKU"
                 echo $NEW_SKU > .sku
