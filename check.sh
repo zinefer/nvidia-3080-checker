@@ -16,10 +16,21 @@ checkUrl() {
 
     curl -s -A $USER_AGENT "$1" > $FILE
 
+    if cat $FILE | grep -q "502 Bad Gateway"; then
+        echo -ne '-'
+        return 0 # 502 error
+    fi
+
+    if cat $FILE | grep -q "504 Gateway Time-out"; then
+        echo -ne '-'
+        return 0 # 504 error
+    fi
+
     if cat $FILE | grep -q "$2"; then
+        echo -ne '.'
         return 0 # $2 exists in $1
     else
-        return 1
+        return 1 
     fi
 }
 
